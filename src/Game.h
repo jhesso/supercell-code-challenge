@@ -12,6 +12,7 @@ class Player;
 class GameInput;
 class Vampire;
 class SpeedBuff;
+class HealthPack;
 
 namespace sf { class Clock; }
 
@@ -46,6 +47,7 @@ public:
 
     void vampireSpawner(float deltaTime);
     void powerUpSpawner(float deltaTime);
+    void healthPackSpawner(float deltaTime);
 
     void triggerScreenFlash();
     void triggerScreenShake(float duration, float intensity);
@@ -57,12 +59,15 @@ private:
 
     std::vector<std::unique_ptr<Vampire>> m_pVampires;
     std::vector<std::unique_ptr<SpeedBuff>> m_pPowerUps;
+    std::vector<std::unique_ptr<HealthPack>> m_pHealthPacks;
 
     State m_state;
     std::unique_ptr<sf::Clock> m_pClock;
     std::unique_ptr<GameInput> m_pGameInput;
 
     float m_pausedTime = 0.0f;
+
+    static constexpr float MIN_VAMPIRE_COOLDOWN = 0.1f;
 
     float m_vampireCooldown = 0.0f;
     float m_nextVampireCooldown = 2.0f;
@@ -71,6 +76,10 @@ private:
     float m_powerUpCooldown = 0.0f;
     float m_nextPowerUpCooldown = 5.0f;
     int m_powerUpCount = 0;
+
+    float m_healthPackCooldown = 0.0f;
+    float m_nextHealthPackCooldown = 2.0f;
+    int m_healthPackCount = 0;
 
     bool m_screenFlash = false;
     float m_flashDuration = 0.0f;

@@ -13,6 +13,7 @@
 #include "Rectangle.h"
 #include "Vampire.h"
 #include "SpeedBuff.h"
+#include "HealthPack.h"
 
 Game::Game(sf::RenderWindow& window) :
     m_window(window),
@@ -22,7 +23,9 @@ Game::Game(sf::RenderWindow& window) :
     m_vampireCooldown(2.0f),
     m_nextVampireCooldown(2.0f),
     m_powerUpCooldown(5.0f),
-    m_nextPowerUpCooldown(5.0f)
+    m_nextPowerUpCooldown(5.0f),
+    m_healthPackCooldown(10.0f),
+    m_nextHealthPackCooldown(10.0f)
 {
     m_pGameInput = std::make_unique<GameInput>(this, m_pPlayer.get());
 }
@@ -62,7 +65,13 @@ void Game::resetLevel()
 {
     m_pVampires.clear();
     m_pPowerUps.clear();
+    m_pHealthPacks.clear();
+    m_vampireCooldown = 0.0f;
+    m_nextVampireCooldown = 2.0f;
     m_powerUpCooldown = 5.0f;
+    m_nextPowerUpCooldown = 5.0f;
+    m_healthPackCooldown = 10.0f;
+    m_nextHealthPackCooldown = 10.0f;
     m_pausedTime = 0.0f;
     m_pClock->restart();
 
@@ -97,6 +106,12 @@ void Game::update(float deltaTime)
 
             powerUpSpawner(deltaTime);
             for (auto& temp : m_pPowerUps)
+            {
+                temp->update(deltaTime);
+            }
+
+            healthPackSpawner(deltaTime);
+            for (auto& temp : m_pHealthPacks)
             {
                 temp->update(deltaTime);
             }
@@ -137,6 +152,20 @@ void Game::update(float deltaTime)
             m_powerUpCount--;
             if (m_powerUpCount < 0)
                 m_powerUpCount = 0;
+            continue;
+        }
+        i++;
+    }
+    i = 0;
+    while (i < m_pHealthPacks.size())
+    {
+        if (m_pHealthPacks[i]->isPickedUp())
+        {
+            std::swap(m_pHealthPacks[i], m_pHealthPacks.back());
+            m_pHealthPacks.pop_back();
+            m_healthPackCount--;
+            if (m_healthPackCount < 0)
+                m_healthPackCount = 0;
             continue;
         }
         i++;
@@ -263,6 +292,10 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
     {
         temp->draw(target, states);
     }
+    for (auto& temp : m_pHealthPacks)
+    {
+        temp->draw(target, states);
+    }
 
     if (m_screenFlash)
     {
@@ -327,6 +360,8 @@ void Game::vampireSpawner(float deltaTime)
     if (m_spawnCount % 5 == 0)
     {
         m_nextVampireCooldown -= 0.1f;
+        if (m_nextVampireCooldown < MIN_VAMPIRE_COOLDOWN)
+            m_nextVampireCooldown = MIN_VAMPIRE_COOLDOWN;
     }
     m_vampireCooldown = m_nextVampireCooldown;
 }
@@ -342,11 +377,27 @@ void Game::powerUpSpawner(float deltaTime)
     }
 
     sf::Vector2f spawnPosition = getSpawnPosition(2);
-    m_pPowerUps.push_back(std::make_unique<SpeedBuff>(this, spawnPosition)); //? to add more powerups need to change <speedBuff> to something else
+    m_pPowerUps.push_back(std::make_unique<SpeedBuff>(this, spawnPosition));
 
     m_powerUpCount++;
     m_powerUpCooldown = m_nextPowerUpCooldown;
-    // std::cout << "Spawned a powerup!\n";
+}
+
+void Game::healthPackSpawner(float deltaTime)
+{
+    if (m_healthPackCount == 1)
+        return;
+    if (m_healthPackCooldown > 0.0f)
+    {
+        m_healthPackCooldown -= deltaTime;
+        return;
+    }
+
+    sf::Vector2f spawnPosition = getSpawnPosition(2);
+    m_pHealthPacks.push_back(std::make_unique<HealthPack>(this, spawnPosition));
+
+    m_healthPackCount++;
+    m_healthPackCooldown = m_nextHealthPackCooldown;
 }
 
 void Game::triggerScreenFlash(void)
