@@ -25,3 +25,9 @@ sudo apt install \
 Simply run `cmake -B build` and `cmake --build build`. This builds the executable in `./build/bin/`.
 
 The exact location of the executable may differ depending on your system and compiler. Example locations are `./build/bin/survive` and `./build/bin/Debug/survive.exe`.
+
+## Keybinds
+
+WASD or arrow keys: move
+Space: attack
+Escape: Pause
