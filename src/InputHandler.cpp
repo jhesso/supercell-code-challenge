@@ -1,17 +1,15 @@
 #include "InputHandler.h"
 #include "Weapon.h"
 #include "Player.h"
+#include "Game.h"
 
 GameInput::GameInput(Game* pGame, Player* pPlayer) :
     m_pGame(pGame), m_pPlayer(pPlayer)
 {
-
-
 }
 
 GameInput::~GameInput()
 {
-
 }
 
 void GameInput::update(float deltaTime)
@@ -25,6 +23,10 @@ void GameInput::update(float deltaTime)
     {
         m_pPlayer->attack();
     }
+    if (m_inputData.m_escape)
+        m_pGame->setState(Game::State::PAUSED);
+    if (m_pGame->getState() == Game::State::PAUSED && !m_inputData.m_escape)
+        m_pGame->setState(Game::State::ACTIVE);
 }
 
 void GameInput::onKeyPressed(sf::Keyboard::Key key)
@@ -53,6 +55,12 @@ void GameInput::onKeyPressed(sf::Keyboard::Key key)
         }
         m_inputData.m_spaceReleased = false;
     }
+    else if (key == sf::Keyboard::Escape)
+    {
+        if (m_inputData.m_escapeReleased)
+            m_inputData.m_escape = !m_inputData.m_escape;
+        m_inputData.m_escapeReleased = false;
+    }
 }
 
 void GameInput::onKeyReleased(sf::Keyboard::Key key)
@@ -77,5 +85,9 @@ void GameInput::onKeyReleased(sf::Keyboard::Key key)
     {
         m_inputData.m_space = false;
         m_inputData.m_spaceReleased = true;
+    }
+    else if (key == sf::Keyboard::Escape)
+    {
+        m_inputData.m_escapeReleased = true;
     }
 }
