@@ -20,6 +20,7 @@ bool Player::initialise()
     setIsDead(false);
     setPosition(ScreenWidth / 2, ScreenHeight / 2);
     m_sprite.setPosition(getPosition());
+    m_playerSpeed = PlayerDefaultSpeed;
     return true;
 }
 
@@ -28,12 +29,12 @@ void Player::move(InputData inputData, float deltaTime)
     float xSpeed = 0.0f;
     float ySpeed = 0.0f;
 
-    xSpeed -= inputData.m_movingLeft * PlayerSpeed;
-    xSpeed += inputData.m_movingRight * PlayerSpeed;
+    xSpeed -= inputData.m_movingLeft * m_playerSpeed;
+    xSpeed += inputData.m_movingRight * m_playerSpeed;
     xSpeed *= deltaTime;
 
-    ySpeed -= inputData.m_movingUp * PlayerSpeed;
-    ySpeed += inputData.m_movingDown * PlayerSpeed;
+    ySpeed -= inputData.m_movingUp * m_playerSpeed;
+    ySpeed += inputData.m_movingDown * m_playerSpeed;
     ySpeed *= deltaTime;
 
     sf::Transformable::move(sf::Vector2f(xSpeed, ySpeed));
