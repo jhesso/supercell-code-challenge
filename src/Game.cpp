@@ -60,6 +60,8 @@ void Game::resetLevel()
     m_pVampires.clear();
     m_pPowerUps.clear();
     m_powerUpCooldown = 5.0f;
+    m_pausedTime = 0.0f;
+    m_pClock->restart();
 
     m_pPlayer->initialise();
     m_pClock->restart();
@@ -103,6 +105,12 @@ void Game::update(float deltaTime)
             }
         }
         break;
+
+        case State::PAUSED:
+        {
+            m_pGameInput->update(deltaTime);
+        }
+        break;
     }
 
     int i = 0;
@@ -132,6 +140,20 @@ void Game::update(float deltaTime)
     }
 }
 
+void Game::setState(State state)
+{
+    if (state == State::PAUSED && m_state != State::PAUSED)
+    {
+        m_pausedTime += m_pClock->getElapsedTime().asSeconds();
+        std::cout << "Pause time: " << m_pausedTime << std::endl;
+    }
+    else if (state != State::PAUSED && m_state == State::PAUSED)
+    {
+        m_pClock->restart();
+    }
+    m_state = state;
+}
+
 void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
     //  Draw texts.
@@ -151,7 +173,12 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         timerText.setFont(m_font);
         timerText.setFillColor(sf::Color::White);
         timerText.setStyle(sf::Text::Bold);
-        timerText.setString(std::to_string((int)m_pClock->getElapsedTime().asSeconds()));
+        if (m_state != State::PAUSED)
+            timerText.setString(std::to_string(static_cast<float>(m_pausedTime + m_pClock->getElapsedTime().asSeconds())));
+        else
+        {
+            timerText.setString(std::to_string(static_cast<float>(m_pausedTime)));
+        }
         timerText.setPosition(sf::Vector2f((ScreenWidth - timerText.getLocalBounds().getSize().x) * 0.5, 20));
         target.draw(timerText);
     }

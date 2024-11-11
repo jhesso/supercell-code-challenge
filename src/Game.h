@@ -22,6 +22,7 @@ public:
     {
         WAITING,
         ACTIVE,
+        PAUSED,
     };
 
     Game();
@@ -33,6 +34,7 @@ public:
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
     State getState() const { return m_state; }
+    void setState(State state);
 
     void onKeyPressed(sf::Keyboard::Key key);
     void onKeyReleased(sf::Keyboard::Key key);
@@ -53,6 +55,8 @@ private:
     State m_state;
     std::unique_ptr<sf::Clock> m_pClock;
     std::unique_ptr<GameInput> m_pGameInput;
+
+    float m_pausedTime = 0.0f;
 
     float m_vampireCooldown = 0.0f;
     float m_nextVampireCooldown = 2.0f;
