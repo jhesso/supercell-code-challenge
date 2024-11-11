@@ -37,10 +37,15 @@ public:
     float getSpeed(void) { return m_playerSpeed; }
     void setSpeed(float f) { m_playerSpeed = f; }
 
+    int getHp(void) { return m_Hp; }
+    void setHp(int hp) { m_Hp = hp; }
+    void decreaseHpBy(int amount) { m_Hp -= amount; }
+
 private:
     bool    m_isDead = false;
     eDirection m_direction = LEFT;
     Game*   m_pGame;
     float   m_playerSpeed = PlayerDefaultSpeed;
+    int     m_Hp = PlayerDefaultHp;
     std::unique_ptr<Weapon> m_pWeapon;
 };

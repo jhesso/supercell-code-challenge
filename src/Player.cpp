@@ -21,6 +21,7 @@ bool Player::initialise()
     setPosition(ScreenWidth / 2, ScreenHeight / 2);
     m_sprite.setPosition(getPosition());
     m_playerSpeed = PlayerDefaultSpeed;
+    m_Hp = PlayerDefaultHp;
     return true;
 }
 
@@ -59,6 +60,8 @@ void Player::update(float deltaTime)
     sf::Vector2f weaponSize = m_pWeapon->getSize();
 
     m_sprite.setPosition(getPosition());
+    if (m_Hp <= 0)
+        m_isDead = true;
     m_pWeapon->setPosition(sf::Vector2f(
         getCenter().x - (m_direction == LEFT ? weaponSize.x : 0.0f),
         getCenter().y - weaponSize.y / 2.0f));

@@ -31,7 +31,12 @@ void Vampire::update(float deltaTime)
     }
 
     if (collidesWith(pPlayer))
-        pPlayer->setIsDead(true); //? instead decrease player HP amount?
+    {
+        pPlayer->decreaseHpBy(40);
+        m_isKilled = true;
+        m_pGame->triggerScreenFlash();
+        m_pGame->triggerScreenShake(0.5f, 5.0f);
+    }
 
     sf::Vector2f playerCenter = pPlayer->getCenter();
     sf::Vector2f direction = VecNormalized(playerCenter - getCenter());

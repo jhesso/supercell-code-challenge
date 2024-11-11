@@ -14,7 +14,8 @@
 #include "Vampire.h"
 #include "SpeedBuff.h"
 
-Game::Game() :
+Game::Game(sf::RenderWindow& window) :
+    m_window(window),
     m_state(State::WAITING),
     m_pClock(std::make_unique<sf::Clock>()),
     m_pPlayer(std::make_unique<Player>(this)),
@@ -140,6 +141,31 @@ void Game::update(float deltaTime)
         }
         i++;
     }
+
+    if (m_screenFlash)
+    {
+        m_flashDuration -= deltaTime;
+        if (m_flashDuration <= 0.0f)
+            m_screenFlash = false;
+    }
+
+    if (m_screenShake)
+    {
+        m_shakeDuration -= deltaTime;
+        if (m_shakeDuration <= 0.0f)
+        {
+            m_screenShake = false;
+            m_window.setView(m_originalView);
+        }
+        else
+        {
+            float offsetX = (rand() % 100 - 50) / 50.0f * m_shakeIntensity;
+            float offsetY = (rand() % 100 - 50) / 50.0f * m_shakeIntensity;
+            sf::View shakeView = m_originalView;
+            shakeView.move(offsetX, offsetY);
+            m_window.setView(shakeView);
+        }
+    }
 }
 
 void Game::setState(State state)
@@ -186,6 +212,19 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         timerText.setString(ss.str());
         timerText.setPosition(sf::Vector2f((ScreenWidth - timerText.getLocalBounds().getSize().x) * 0.5, 20));
         target.draw(timerText);
+
+        sf::Text hpText;
+        hpText.setFont(m_font);
+        hpText.setFillColor(sf::Color::Red);
+        hpText.setCharacterSize(15);
+        hpText.setStyle(sf::Text::Bold);
+
+        std::stringstream hpStream;
+        hpStream << "HP: " << static_cast<int>(m_pPlayer->getHp());
+
+        hpText.setString(hpStream.str());
+        hpText.setPosition(sf::Vector2f((ScreenWidth - hpText.getLocalBounds().getSize().x) * 0.5, 60.0f));
+        target.draw(hpText);
     }
 
     if (m_state == State::PAUSED)
@@ -203,6 +242,15 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         target.draw(pauseText);
     }
 
+    sf::Text controlsText;
+    controlsText.setFont(m_font);
+    controlsText.setString("WASD/Arrow Keys: Move | SPACE: Attack | Escape: Pause/Unpause");
+    controlsText.setFillColor(sf::Color::White);
+    controlsText.setPosition(sf::Vector2f(10, ScreenHeight - 20));
+    controlsText.setCharacterSize(15);
+    controlsText.setStyle(sf::Text::Bold);
+    target.draw(controlsText);
+
     // Draw player.
     m_pPlayer->draw(target, states);
 
@@ -214,6 +262,13 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
     for (auto& temp : m_pPowerUps)
     {
         temp->draw(target, states);
+    }
+
+    if (m_screenFlash)
+    {
+        sf::RectangleShape flashOverlay(sf::Vector2f(ScreenWidth, ScreenHeight));
+        flashOverlay.setFillColor(sf::Color(255, 0, 0, 128));
+        target.draw(flashOverlay);
     }
 }
 
@@ -292,4 +347,18 @@ void Game::powerUpSpawner(float deltaTime)
     m_powerUpCount++;
     m_powerUpCooldown = m_nextPowerUpCooldown;
     // std::cout << "Spawned a powerup!\n";
+}
+
+void Game::triggerScreenFlash(void)
+{
+    m_screenFlash = true;
+    m_flashDuration = 0.1f;
+}
+
+void Game::triggerScreenShake(float duration, float intensity)
+{
+    m_screenShake = true;
+    m_shakeDuration = duration;
+    m_shakeIntensity = intensity;
+    m_originalView = m_window.getView();
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Window/Keyboard.hpp>
@@ -7,7 +8,7 @@
 #include "Constants.h"
 
 class Player;
-class Game;
+// class Game;
 class GameInput;
 class Vampire;
 class SpeedBuff;
@@ -25,7 +26,7 @@ public:
         PAUSED,
     };
 
-    Game();
+    Game(sf::RenderWindow& window);
     ~Game();
 
     bool initialise();
@@ -46,7 +47,12 @@ public:
     void vampireSpawner(float deltaTime);
     void powerUpSpawner(float deltaTime);
 
+    void triggerScreenFlash();
+    void triggerScreenShake(float duration, float intensity);
+
 private:
+    sf::RenderWindow& m_window;
+
     std::unique_ptr<Player> m_pPlayer;
 
     std::vector<std::unique_ptr<Vampire>> m_pVampires;
@@ -65,6 +71,13 @@ private:
     float m_powerUpCooldown = 0.0f;
     float m_nextPowerUpCooldown = 5.0f;
     int m_powerUpCount = 0;
+
+    bool m_screenFlash = false;
+    float m_flashDuration = 0.0f;
+    bool m_screenShake = false;
+    float m_shakeDuration = 0.0f;
+    float m_shakeIntensity = 0.0f;
+    sf::View m_originalView;
 
     sf::Font m_font;
     sf::Texture m_vampTexture;

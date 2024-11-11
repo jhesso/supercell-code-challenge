@@ -14,14 +14,14 @@ int main(int argc, char* argv[])
 
     sf::RenderWindow window(sf::VideoMode(ScreenWidth, ScreenHeight), "Survive");
     window.setKeyRepeatEnabled(false);
-    
-    std::unique_ptr<Game> pGame = std::make_unique<Game>();
+
+    std::unique_ptr<Game> pGame = std::make_unique<Game>(window);
     if (!pGame->initialise())
     {
         std::cerr << "Game Failed to initialise" << std::endl;
         return 1;
     }
-    
+
     sf::Clock clock;
     // run the program as long as the window is open
     while (window.isOpen())
@@ -46,19 +46,19 @@ int main(int argc, char* argv[])
                     break;
             }
         }
-        
+
         sf::Time elapsedTime = clock.getElapsedTime();
         clock.restart();
         pGame->update(elapsedTime.asSeconds());
-        
+
         // clear the window with black color
         window.clear(sf::Color::Black);
-        
+
         window.draw(*pGame.get());
-        
+
         // end the current frame
         window.display();
     }
-    
+
     return 0;
 }
