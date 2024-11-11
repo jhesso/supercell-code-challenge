@@ -188,6 +188,21 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         target.draw(timerText);
     }
 
+    if (m_state == State::PAUSED)
+    {
+        sf::RectangleShape pauseScreen(sf::Vector2f(ScreenWidth, ScreenHeight));
+        pauseScreen.setFillColor(sf::Color(255, 255, 255, 50));
+        pauseScreen.setPosition(sf::Vector2f(0, 0));
+        target.draw(pauseScreen);
+        sf::Text pauseText;
+        pauseText.setFont(m_font);
+        pauseText.setString("Game Paused");
+        pauseText.setFillColor(sf::Color::White);
+        pauseText.setPosition(sf::Vector2f((ScreenWidth - pauseText.getLocalBounds().getSize().x) * 0.5, 80.0f));
+        pauseText.setStyle(sf::Text::Bold);
+        target.draw(pauseText);
+    }
+
     // Draw player.
     m_pPlayer->draw(target, states);
 
@@ -276,5 +291,5 @@ void Game::powerUpSpawner(float deltaTime)
 
     m_powerUpCount++;
     m_powerUpCooldown = m_nextPowerUpCooldown;
-    std::cout << "Spawned a powerup!\n";
+    // std::cout << "Spawned a powerup!\n";
 }
