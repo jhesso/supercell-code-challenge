@@ -10,13 +10,16 @@
 #include "Player.h"
 #include "Rectangle.h"
 #include "Vampire.h"
+#include "SpeedBuff.h"
 
 Game::Game() :
     m_state(State::WAITING),
     m_pClock(std::make_unique<sf::Clock>()),
     m_pPlayer(std::make_unique<Player>(this)),
     m_vampireCooldown(2.0f),
-    m_nextVampireCooldown(2.0f)
+    m_nextVampireCooldown(2.0f),
+    m_powerUpCooldown(5.0f),
+    m_nextPowerUpCooldown(5.0f)
 {
     m_pGameInput = std::make_unique<GameInput>(this, m_pPlayer.get());
 }
@@ -55,6 +58,8 @@ bool Game::initialise()
 void Game::resetLevel()
 {
     m_pVampires.clear();
+    m_pPowerUps.clear();
+    m_powerUpCooldown = 5.0f;
 
     m_pPlayer->initialise();
     m_pClock->restart();
@@ -73,7 +78,7 @@ void Game::update(float deltaTime)
             }
         }
         break;
-            
+
         case State::ACTIVE:
         {
             m_pGameInput->update(deltaTime);
@@ -81,6 +86,12 @@ void Game::update(float deltaTime)
 
             vampireSpawner(deltaTime);
             for (auto& temp : m_pVampires)
+            {
+                temp->update(deltaTime);
+            }
+
+            powerUpSpawner(deltaTime);
+            for (auto& temp : m_pPowerUps)
             {
                 temp->update(deltaTime);
             }
@@ -101,6 +112,20 @@ void Game::update(float deltaTime)
         {
             std::swap(m_pVampires[i], m_pVampires.back());
             m_pVampires.pop_back();
+            continue;
+        }
+        i++;
+    }
+    i = 0;
+    while (i < m_pPowerUps.size())
+    {
+        if (m_pPowerUps[i]->isPickedUp())
+        {
+            std::swap(m_pPowerUps[i], m_pPowerUps.back());
+            m_pPowerUps.pop_back();
+            m_powerUpCount--;
+            if (m_powerUpCount < 0)
+                m_powerUpCount = 0;
             continue;
         }
         i++;
@@ -139,6 +164,10 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
     {
         temp->draw(target, states);
     }
+    for (auto& temp : m_pPowerUps)
+    {
+        temp->draw(target, states);
+    }
 }
 
 
@@ -152,9 +181,32 @@ void Game::onKeyReleased(sf::Keyboard::Key key)
     m_pGameInput->onKeyReleased(key);
 }
 
-Player* Game::getPlayer() const 
+Player* Game::getPlayer() const
 {
     return m_pPlayer.get();
+}
+
+sf::Vector2f getSpawnPosition(int type) // 1 = vampire, 2 = powerUp
+{
+
+    float randomXPos = static_cast<float>(rand() % ScreenWidth);
+    float randomYPos = static_cast<float>(rand() % ScreenHeight);
+
+    if (type == 1)
+    {
+        float distToRight = (float) ScreenWidth - randomXPos;
+        float distToBottom = (float) ScreenHeight - randomYPos;
+
+        float xMinDist = randomXPos < distToRight ? -randomXPos : distToRight;
+        float yMinDist = randomYPos < distToBottom ? -randomYPos : distToBottom;
+
+        if (abs(xMinDist) < abs(yMinDist))
+            randomXPos += xMinDist;
+        else
+            randomYPos += yMinDist;
+    }
+
+    return sf::Vector2f(randomXPos, randomYPos);
 }
 
 void Game::vampireSpawner(float deltaTime)
@@ -165,21 +217,8 @@ void Game::vampireSpawner(float deltaTime)
         return;
     }
 
-    float randomXPos = rand() % ScreenWidth;
-    float randomYPos = rand() % ScreenHeight;
+    sf::Vector2f spawnPosition = getSpawnPosition(1);
 
-    float distToRight = (float) ScreenWidth - randomXPos;
-    float distToBottom = (float) ScreenHeight - randomYPos;
-
-    float xMinDist = randomXPos < distToRight ? -randomXPos : distToRight;
-    float yMinDist = randomYPos < distToBottom ? -randomYPos : distToBottom;
-
-    if (abs(xMinDist) < abs(yMinDist))
-        randomXPos += xMinDist;
-    else
-        randomYPos += yMinDist;
-
-    sf::Vector2f spawnPosition = sf::Vector2f(randomXPos, randomYPos);
     m_pVampires.push_back(std::make_unique<Vampire>(this, spawnPosition));
 
     m_spawnCount++;
@@ -188,4 +227,22 @@ void Game::vampireSpawner(float deltaTime)
         m_nextVampireCooldown -= 0.1f;
     }
     m_vampireCooldown = m_nextVampireCooldown;
+}
+
+void Game::powerUpSpawner(float deltaTime)
+{
+    if (m_powerUpCount == 3)
+        return;
+    if (m_powerUpCooldown > 0.0f)
+    {
+        m_powerUpCooldown -= deltaTime;
+        return;
+    }
+
+    sf::Vector2f spawnPosition = getSpawnPosition(2);
+    m_pPowerUps.push_back(std::make_unique<SpeedBuff>(this, spawnPosition)); //? to add more powerups need to change <speedBuff> to something else
+
+    m_powerUpCount++;
+    m_powerUpCooldown = m_nextPowerUpCooldown;
+    std::cout << "Spawned a powerup!\n";
 }
