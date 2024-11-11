@@ -28,6 +28,6 @@ The exact location of the executable may differ depending on your system and com
 
 ## Keybinds
 
-WASD or arrow keys: move
-Space: attack
-Escape: Pause
+WASD or arrow keys: move<br/>
+Space: attack<br/>
+Escape: Pause<br/>
