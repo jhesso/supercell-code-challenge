@@ -21,7 +21,7 @@ void Vampire::update(float deltaTime)
 {
     if (m_isKilled)
         return;
-    
+
     Player* pPlayer = m_pGame->getPlayer();
 
     if (collidesWith(pPlayer->getWeapon()))
@@ -31,7 +31,7 @@ void Vampire::update(float deltaTime)
     }
 
     if (collidesWith(pPlayer))
-        pPlayer->setIsDead(true);
+        pPlayer->setIsDead(true); //? instead decrease player HP amount?
 
     sf::Vector2f playerCenter = pPlayer->getCenter();
     sf::Vector2f direction = VecNormalized(playerCenter - getCenter());
@@ -39,3 +39,4 @@ void Vampire::update(float deltaTime)
     sf::Transformable::move(direction);
     m_sprite.setPosition(getPosition());
 }
+
