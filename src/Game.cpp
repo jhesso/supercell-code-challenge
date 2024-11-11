@@ -3,6 +3,8 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 
 #include "ResourceManager.h"
 #include "InputHandler.h"
@@ -163,7 +165,7 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         startText.setFont(m_font);
         startText.setString("Game Start!");
         startText.setFillColor(sf::Color::White);
-        startText.setPosition(80.0f, 80.0f);
+        startText.setPosition(sf::Vector2f((ScreenWidth - startText.getLocalBounds().getSize().x) * 0.5, 80.0f));
         startText.setStyle(sf::Text::Bold);
         target.draw(startText);
     }
@@ -173,12 +175,15 @@ void Game::draw(sf::RenderTarget &target, sf::RenderStates states) const
         timerText.setFont(m_font);
         timerText.setFillColor(sf::Color::White);
         timerText.setStyle(sf::Text::Bold);
+
+        std::stringstream ss;
+        ss << std::fixed << std::setprecision(2);
         if (m_state != State::PAUSED)
-            timerText.setString(std::to_string(static_cast<float>(m_pausedTime + m_pClock->getElapsedTime().asSeconds())));
+            ss << (m_pausedTime + m_pClock->getElapsedTime().asSeconds());
         else
-        {
-            timerText.setString(std::to_string(static_cast<float>(m_pausedTime)));
-        }
+           ss << m_pausedTime;
+
+        timerText.setString(ss.str());
         timerText.setPosition(sf::Vector2f((ScreenWidth - timerText.getLocalBounds().getSize().x) * 0.5, 20));
         target.draw(timerText);
     }
